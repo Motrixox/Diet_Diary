@@ -1,0 +1,187 @@
+﻿@using Microsoft.AspNetCore.Identity;
+@using AspNetCore.Identity.Mongo.Model;
+@inject SignInManager<MongoUser> SignInManager
+@inject UserManager<MongoUser> UserManager
+
+@{
+    TempData["Calories"] = "";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Wyszukiwarka</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="~/css/search.css" asp-append-version="true" />
+    <script>
+        $(document).ready(function () {
+            $('#searchBox').keyup(function () {
+                var searchText = $(this).val();
+                if (searchText.length >= 2) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/Meal/GetSuggestions",
+                        data: { searchText: searchText },
+                        success: function (response) {
+                            var suggestionsPanel = $('#suggestionsPanel');
+                            suggestionsPanel.empty();
+
+                            if (response.length > 0) {
+                                suggestionsPanel.html(response);
+                            }
+                            else {
+                                suggestionsPanel.html('<div class="no-suggestions">No suggestions</div>');
+                            }
+
+                            suggestionsPanel.show();
+                        },
+                        error: function (response) {
+                            // Error handling
+                        }
+                    });
+                }
+                else {
+                    $('#suggestionsPanel').hide();
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="search-container">
+        <input type="text" id="searchBox" class="form-control" placeholder="Enter product" />
+        <div id="suggestionsPanel"></div>
+    </div>
+
+    <form action="/Meal/Create" method="post" onsubmit="return validateForm()">
+        <div id="name" class="mb-3">
+            <label for="mealName" class="form-label">Name:</label>
+            <input type="text" id="mealName" name="name" class="form-control" placeholder="Enter meal name" />
+        </div>
+        <table id="selectedProducts" class="table">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity (grams)</th>
+                    <th>Calories per 100g</th>
+                    <th>Calories</th>
+                    <th>Remove</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Chosen products will be placed here -->
+            </tbody>
+        </table>
+        <div id="totalCalories" class="mt-3"></div>
+        <input type="text" name="calc" id="inputTotalCalories" class="form-control" hidden/>
+
+        <button type="submit" class="btn btn-primary mt-3">Save meal</button>
+    </form>
+
+
+    <script>
+
+        function selectProduct(product, calories) {
+            var selectedProductsContainer = document.getElementById('selectedProducts');
+
+            var quantityInput = document.createElement('input');
+            quantityInput.type = 'number';
+            quantityInput.name = 'ProductQuantities[' + product + ']';
+            quantityInput.placeholder = 'Amount in grams';
+            quantityInput.className = 'form-control';
+
+            var caloriesPer100g = parseFloat(calories);
+
+            var productRow = document.createElement('tr');
+
+            var productNameCell = document.createElement('td');
+            productNameCell.textContent = product;
+
+            var quantityCell = document.createElement('td');
+            quantityCell.appendChild(quantityInput);
+
+            var caloriesPer100gCell = document.createElement('td');
+            caloriesPer100gCell.textContent = caloriesPer100g;
+
+            var calculatedCaloriesCell = document.createElement('td');
+
+            var deleteButtonCell = document.createElement('td');
+            var deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.className = 'btn btn-danger btn-sm';
+            deleteButton.addEventListener('click', function () {
+                productRow.remove();
+                recalculateTotalCalories();
+            });
+            deleteButtonCell.appendChild(deleteButton);
+
+            productRow.appendChild(productNameCell);
+            productRow.appendChild(quantityCell);
+            productRow.appendChild(caloriesPer100gCell);
+            productRow.appendChild(calculatedCaloriesCell);
+            productRow.appendChild(deleteButtonCell);
+
+            selectedProductsContainer.querySelector('tbody').appendChild(productRow);
+
+            document.getElementById('searchBox').value = '';
+            var suggestionsPanel = $('#suggestionsPanel');
+            suggestionsPanel.empty();
+            suggestionsPanel.hide();
+
+            quantityInput.addEventListener('input', function () {
+                calculateProductCalories(this, caloriesPer100g, calculatedCaloriesCell);
+                recalculateTotalCalories();
+            });
+        }
+
+        function calculateProductCalories(quantityInput, caloriesPer100g, calculatedCaloriesCell) {
+            var quantity = parseFloat(quantityInput.value);
+            var calculatedCalories = (quantity * caloriesPer100g) / 100;
+            calculatedCaloriesCell.textContent = calculatedCalories.toFixed(2);
+        }
+
+        function recalculateTotalCalories() {
+            var totalCalories = 0;
+            var calculatedCaloriesCells = document.querySelectorAll('#selectedProducts tbody td:nth-child(4)');
+            calculatedCaloriesCells.forEach(function (cell) {
+                totalCalories += parseFloat(cell.textContent);
+            });
+            document.getElementById('totalCalories').textContent = totalCalories.toFixed(2);
+            document.getElementById('inputTotalCalories').value = totalCalories.toFixed(2);
+        }
+
+        function validateForm() {
+            var nameInput = document.getElementById('mealName');
+            var products = document.querySelectorAll('#selectedProducts tbody tr');
+
+            if (nameInput.value.trim() === '') {
+                alert('Please enter a meal name.');
+                return false;
+            }
+
+            if (products.length === 0) {
+                alert('Please select at least one product.');
+                return false;
+            }
+
+            for (var i = 0; i < products.length; i++) {
+                var quantityInput = products[i].querySelector('.quantity-input');
+                var quantity = parseFloat(quantityInput.value.trim());
+
+                if (quantityInput.value.trim() === '') { // this does not seem to work
+                    alert('Please enter a quantity for all products.');
+                    return false;
+                }
+
+                if (quantity <= 0 || isNaN(quantity)) { // same here
+                    alert('Please enter a valid quantity for all products.');
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    </script>
+</body>
+</html>

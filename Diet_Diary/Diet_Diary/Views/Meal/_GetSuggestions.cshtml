@@ -1,0 +1,17 @@
+﻿@model IEnumerable<Product>
+<table>
+@if (Model.Any())
+{
+    foreach (var product in Model)
+    {
+        <tr class="suggestion" onclick="selectProduct('@product.Name', @product.Calories)">
+            <td style="width:90%">@product.Name</td>
+            <td style="width:10%">@product.Calories</td>
+        </tr>
+    }
+}
+else
+{
+    <div class="no-suggestions">No Suggestions</div>
+}
+</table>

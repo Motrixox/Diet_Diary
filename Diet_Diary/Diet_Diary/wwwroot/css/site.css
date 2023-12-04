@@ -1,0 +1,50 @@
+:root {
+	--theme-a: #40527A;
+	--theme-b: #CEDCFB;
+	--theme-c: #81A8FA;
+	--theme-d: #646B7A;
+	--theme-e: #6786C7;
+}
+
+html {
+	font-size: 14px;
+}
+
+@media (min-width: 768px) {
+	html {
+		font-size: 16px;
+	}
+}
+
+.footer {
+	background-color: var(--theme-c);
+	min-height: 50px;
+}
+
+html {
+	position: relative;
+	min-height: 100%;
+	background-image: url('../images/Diet_Diary_bg.jpg');
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-color: rgba(0, 0, 0, 0.5);
+}
+
+body {
+	margin-bottom: 50px;
+	margin-top: 60px;
+	min-height: 100%;
+	margin-left: 10%;
+	margin-right: 10%;
+	background-color: white;
+}
+
+td,
+th,
+table {
+	background-color: #fff;
+	border: 3px solid;
+	border-color: white;
+	background-color: rgba(255, 255, 255, 0.75);
+}

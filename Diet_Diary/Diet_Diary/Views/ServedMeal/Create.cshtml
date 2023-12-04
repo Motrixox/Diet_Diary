@@ -1,0 +1,60 @@
+﻿@model Diet_Diary.Models.ServedMeal
+
+@{
+	ViewData["Add S-Meal"] = "Inserting eaten food";
+}
+
+<h1>Add Served meal below:</h1>
+
+<hr />
+<div class="row">
+	<div class="col-md-4">
+		<form asp-action="Create">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<div class="form-group">
+				<label asp-for="Coeff" class="control-label">
+					How much of your meal did you eat? <span style="font-weight: bold;" id="coeffLabelValue">50%</span>
+				</label>
+				<input type="range" id="coeffSlider" class="form-range" min="0" max="1" step="0.01" value="0.5" oninput="updateCoeffLabel(this.value)" />
+				<input asp-for="Coeff" class="form-control" value="0.5" hidden readonly />
+				<span asp-validation-for="Coeff" class="text-danger"></span>
+			</div>
+
+			<div class="form-group">
+				<label asp-for="Date" class="control-label">When did you eat your meal?</label>
+				<input asp-for="Date" class="form-control" />
+				<span asp-validation-for="Date" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<input type="submit" value="Create" class="btn btn-primary" />
+			</div>
+		</form>
+	</div>
+</div>
+
+<div>
+	<a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+	<script>
+		var slider = document.getElementById('slider');
+		var sliderValue = document.getElementById('sliderValue');
+
+		slider.addEventListener('input', function () {
+			sliderValue.textContent = slider.value + '%';
+		});
+
+		function updateCoeffLabel(value) {
+			var sliderValue = parseFloat(value) * 100;
+			var coeffLabelValue = document.getElementById('coeffLabelValue');
+			coeffLabelValue.textContent = sliderValue.toFixed(0) + '%';
+
+			var coeffHidden = document.getElementById('Coeff');
+			coeffHidden.value = value;
+		}
+	</script>
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}

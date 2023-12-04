@@ -1,0 +1,49 @@
+﻿@model IEnumerable<Diet_Diary.Models.Product>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Calories)
+            </th>
+            <th>
+                Product weight (g)
+            </th>
+            <th>
+                Add
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @item.Name
+            </td>
+            <td>
+                @item.Calories
+            </td>
+                @using (Html.BeginForm("AddProduct", "UserProducts", FormMethod.Post))
+                {
+                    <td>
+                        <input type="hidden" name="productName" id="productName" value="@item.Name" />
+                        <input type="text" name="inputWeight" id="amount" />
+                        <input type="hidden" name="userName" id="username" value="@User.Identity.Name" />
+                    </td>
+                    <td>
+                        <input type="submit" value="AddProduct" />
+                    </td>
+                }
+        </tr>
+}
+    </tbody>
+</table>
